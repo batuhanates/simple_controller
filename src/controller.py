@@ -1,10 +1,10 @@
 #! /usr/bin/env python
+
 import rospy
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Point, Twist
-from math import atan2
-from math import sqrt
+import math
 
 x = 0.0
 y = 0.0
@@ -34,32 +34,43 @@ goal = Point()
 goal.x = -2
 goal.y = 1
 
+goal_x = [-2, -1, -1, -1, -1, -2, -3, -4, -5, -6, -6.5, -6.5, -6.5]
+goal_y = [ 1,  1,  2,  3,  4,  4,  4,  4,  4,  4,    4,    3,    2]
+
+distance_treshold = 0.05
+linear_speed = 0.2
+angle_treshold = 0.1
+angular_speed = 0.2
+
+i = 0
 while not rospy.is_shutdown():
-    inc_x = goal_x - x
-    inc_y = goal.y - y
+    inc_x = goal_x[i] - x
+    inc_y = goal_y[i] - y
 
-    distance_to_goal = sqrt(inc_x * inc_x + inc_y * inc_y)
-    if distance_to_goal < 0.05:
-        print("goal reached")
+    distance_to_goal = math.sqrt(inc_x * inc_x + inc_y * inc_y)
+    angle_to_goal = math.atan2(inc_y, inc_x) - theta
+    if angle_to_goal > math.pi:
+        angle_to_goal = angle_to_goal - 2 * math.pi
+    elif angle_to_goal < -math.pi:
+        angle_to_goal = angle_to_goal + 2 * math.pi
+    # print("distance: {}, angle: {}".format(distance_to_goal, angle_to_goal))
+
+    if distance_to_goal < distance_treshold:
+        print("goal {} reached".format(i))
         speed.linear.x = 0.0
         speed.angular.z = 0.0
-        pub.publish(speed)
-        while True:
-            r.sleep()
-
-    angle_to_goal = atan2(inc_y, inc_x)
-
-    if abs(angle_to_goal - theta) > 0.2:
-        speed.linear.x = 0.0
-        if angle_to_goal > 0:
-            speed.angular.z = 0.3
-        else:
-            speed.angular.z = -0.3
+        i = i + 1
     else:
-        speed.angular.z = 0.0
-        r.sleep()
-        speed.linear.x = 0.2
-
+        if abs(angle_to_goal) > angle_treshold:
+            speed.linear.x = 0.0
+            if angle_to_goal > angle_treshold:
+                speed.angular.z = angular_speed
+            else:
+                speed.angular.z = -angular_speed
+        else:
+            speed.angular.z = 0.0
+            r.sleep()
+            speed.linear.x = linear_speed
 
     pub.publish(speed)
     r.sleep()
