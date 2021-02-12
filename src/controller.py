@@ -34,8 +34,8 @@ goal = Point()
 goal.x = -2
 goal.y = 1
 
-goal_x = [-2, -1, -1, -1, -1, -2, -3, -4, -5, -6, -6.5, -6.5, -6.5]
-goal_y = [ 1,  1,  2,  3,  4,  4,  4,  4,  4,  4,    4,    3,    2]
+goal_x = [-1, -1, -6.5, ]#-6.5]
+goal_y = [ 1,  4,    4, ]#   2]
 
 distance_treshold = 0.05
 linear_speed = 0.2
